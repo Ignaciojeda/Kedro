@@ -1,0 +1,14 @@
+rolling_window: 5
+min_games_per_season: 5
+outlier_zscore: 4.0
+
+# columnas críticas que deben existir en games
+required_game_cols:
+  - GAME_ID
+  - SEASON
+  - GAME_DATE_EST
+  - HOME_TEAM_ID
+  - VISITOR_TEAM_ID
+  - PTS_home
+  - PTS_away
+  - HOME_TEAM_WINS
