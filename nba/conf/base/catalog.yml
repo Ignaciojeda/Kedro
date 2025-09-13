@@ -4,17 +4,16 @@ games:
   filepath: data/01_raw/games.csv
   load_args:
     parse_dates: ["GAME_DATE_EST"]
-  versioned: false
 
 games_details:
   type: pandas.CSVDataset
   filepath: data/01_raw/games_details.csv
-  versioned: false
+
 
 teams:
   type: pandas.CSVDataset
   filepath: data/01_raw/teams.csv
-  versioned: false
+
 
 # === INTERMEDIATE ===
 games_validated:
