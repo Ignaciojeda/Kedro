@@ -15,9 +15,6 @@ data/**
 # except their sub-folders
 !data/**/
 
-!data/01_raw/**
-!data/02_intermediate/**
-
 # also keep all .gitkeep files
 !.gitkeep
 

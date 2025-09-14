@@ -16,6 +16,14 @@ teams:
 
 
 # === INTERMEDIATE ===
+
+games_limpios:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/games_limpios.parquet
+  versioned: false
+
+
+
 games_validated:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/games_validated.parquet
