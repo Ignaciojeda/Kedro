@@ -13,6 +13,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     return {
         "__default__": data_engineering + reporting + model_pipeline + Preprocesamiento,
+        "data_engineering": data_engineering,
         "de": data_engineering,
         "rep": reporting,
         "modeling": model_pipeline,  # <-- registrar pipeline

@@ -1,151 +1,322 @@
-import logging
 import pandas as pd
 import numpy as np
-from typing import Tuple
+from typing import Dict, Tuple, List
+import logging
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 logger = logging.getLogger(__name__)
 
-def validate_games_schema(games: pd.DataFrame, required_cols: list[str]) -> pd.DataFrame:
+def clean_games_data(games: pd.DataFrame) -> pd.DataFrame:
     """
-    Comprueba columnas críticas y tipos básicos.
-    - No filas vacías
-    - Columnas requeridas presentes
+    Limpieza y transformación básica del dataset de partidos.
     """
-    assert not games.empty, "games.csv está vacío."
-    missing = set(required_cols) - set(games.columns)
-    assert not missing, f"Faltan columnas en games: {missing}"
-    if not np.issubdtype(games["GAME_DATE_EST"].dtype, np.datetime64):
-        games["GAME_DATE_EST"] = pd.to_datetime(games["GAME_DATE_EST"], errors="coerce")
-    logger.info("Games schema validado: %s filas, %s columnas", *games.shape)
-    return games
+    logger.info("Iniciando limpieza de datos de partidos")
+    
+    games_clean = games.copy()
+    
+    # Convertir fecha (ya se hace en load_args, pero por si acaso)
+    games_clean['GAME_DATE_EST'] = pd.to_datetime(games_clean['GAME_DATE_EST'])
+    
+    # Extraer características temporales
+    games_clean['YEAR'] = games_clean['GAME_DATE_EST'].dt.year
+    games_clean['MONTH'] = games_clean['GAME_DATE_EST'].dt.month
+    games_clean['DAY_OF_WEEK'] = games_clean['GAME_DATE_EST'].dt.dayofweek
+    games_clean['SEASON'] = games_clean['SEASON'].astype(int)
+    
+    # Convertir variable objetivo a booleano
+    games_clean['HOME_TEAM_WINS'] = games_clean['HOME_TEAM_WINS'].astype(bool)
+    
+    # Crear variables derivadas
+    games_clean['POINT_DIFFERENTIAL'] = games_clean['PTS_home'] - games_clean['PTS_away']
+    games_clean['TOTAL_POINTS'] = games_clean['PTS_home'] + games_clean['PTS_away']
+    games_clean['MARGIN_OF_VICTORY'] = abs(games_clean['POINT_DIFFERENTIAL'])
+    
+    logger.info(f"Datos de partidos limpios: {games_clean.shape}")
+    return games_clean
 
-def clean_games(games: pd.DataFrame, outlier_zscore: float) -> pd.DataFrame:
+def clean_teams_data(teams: pd.DataFrame) -> pd.DataFrame:
     """
-    Limpieza básica:
-    - Deduplicados por GAME_ID
-    - Coherencia de puntos (no negativos)
-    - Outliers de puntos por z-score truncado
+    Limpieza del dataset de equipos.
     """
-    games = games.drop_duplicates(subset=["GAME_ID"]).copy()
-    for col in ["PTS_home", "PTS_away"]:
-        games[col] = pd.to_numeric(games[col], errors="coerce")
-        games.loc[games[col] < 0, col] = np.nan
-    # outliers por z-score (suave)
-    for col in ["PTS_home", "PTS_away"]:
-        z = (games[col] - games[col].mean()) / games[col].std(ddof=0)
-        games.loc[(z.abs() > outlier_zscore), col] = np.nan
-    # márgen y totales
-    games["MARGIN"] = games["PTS_home"] - games["PTS_away"]
-    games["TOTAL_POINTS"] = games["PTS_home"] + games["PTS_away"]
-    return games
+    logger.info("Iniciando limpieza de datos de equipos")
+    
+    teams_clean = teams.copy()
+    
+    # Limpiar nombres de columnas (asegurar consistencia)
+    teams_clean.columns = teams_clean.columns.str.upper()
+    
+    # Manejar valores missing
+    teams_clean = teams_clean.fillna({
+        'CITY': 'Unknown',
+        'YEARFOUNDED': teams_clean['YEARFOUNDED'].median()
+    })
+    
+    # Crear nombre completo del equipo
+    teams_clean['FULL_NAME'] = teams_clean['CITY'] + ' ' + teams_clean['NICKNAME']
+    
+    logger.info(f"Datos de equipos limpios: {teams_clean.shape}")
+    return teams_clean
 
-def aggregate_details_to_teamgame(details: pd.DataFrame) -> pd.DataFrame:
+def handle_missing_values(games_clean: pd.DataFrame) -> pd.DataFrame:
     """
-    Agrega games_details a nivel (GAME_ID, TEAM_ID) con totales útiles.
+    Manejo de valores missing en el dataset de partidos.
     """
-    cols = [c for c in details.columns if c not in {"PLAYER_ID","PLAYER_NAME"}]
-    agg = details[cols].groupby(["GAME_ID","TEAM_ID"], dropna=False).sum(numeric_only=True).reset_index()
-    # renombrar métricas clave para evitar colisiones
-    rename = {
-        "REB": "REB_team", "AST": "AST_team", "STL": "STL_team",
-        "BLK": "BLK_team", "TOV": "TOV_team", "FG3M": "FG3M_team"
-    }
-    for k,v in rename.items():
-        if k in agg.columns:
-            agg = agg.rename(columns={k:v})
-    return agg
+    logger.info("Manejando valores missing")
+    
+    games_no_missing = games_clean.copy()
+    missing_cols = games_no_missing.columns[games_no_missing.isnull().any()].tolist()
+    
+    if missing_cols:
+        logger.warning(f"Columnas con valores missing: {missing_cols}")
+        
+        # Estrategias diferentes por tipo de dato
+        numeric_cols = games_no_missing.select_dtypes(include=[np.number]).columns
+        categorical_cols = games_no_missing.select_dtypes(include=['object', 'category']).columns
+        
+        # Imputar numéricos con mediana
+        for col in numeric_cols:
+            if col in missing_cols:
+                games_no_missing[col] = games_no_missing[col].fillna(games_no_missing[col].median())
+        
+        # Imputar categóricos con moda
+        for col in categorical_cols:
+            if col in missing_cols:
+                games_no_missing[col] = games_no_missing[col].fillna(games_no_missing[col].mode()[0])
+    
+    logger.info("Valores missing manejados correctamente")
+    return games_no_missing
 
-def make_team_form_features(
-    games_clean: pd.DataFrame, 
-    details_agg: pd.DataFrame, 
-    rolling_window: int,
-    min_games_per_season: int
-) -> pd.DataFrame:
+def create_team_features_base(games_clean: pd.DataFrame, teams: pd.DataFrame) -> pd.DataFrame:
     """
-    Crea features por equipo previas al partido:
-    - Promedios móviles (pts anotados/permitidos, rebotes, asistencias, pérdidas, 3PT)
-    - Días de descanso (rest_days)
-    - Racha (win_streak)
-    Devuelve un DataFrame a nivel de partido con sufijos _home/_away.
+    Crear features base de rendimiento por equipo.
     """
-    # Preparar calendario por equipo
-    base = games_clean[[
-        "GAME_ID","SEASON","GAME_DATE_EST","HOME_TEAM_ID","VISITOR_TEAM_ID",
-        "PTS_home","PTS_away","HOME_TEAM_WINS","MARGIN","TOTAL_POINTS"
-    ]].copy()
-    # reacomodar a formato long para calcular rolling por equipo
-    home = base.rename(columns={
-        "HOME_TEAM_ID": "TEAM_ID",
-        "PTS_home": "PTS_for",
-        "PTS_away": "PTS_against"
-    })[["GAME_ID","SEASON","GAME_DATE_EST","TEAM_ID","PTS_for","PTS_against","HOME_TEAM_WINS"]]
-    home["is_home"] = 1
+    logger.info("Creando features base de rendimiento por equipo")
+    
+    # Rendimiento como local
+    home_performance = games_clean.groupby(['HOME_TEAM_ID', 'SEASON']).agg({
+        'PTS_home': ['mean', 'std', 'count'],
+        'FG_PCT_home': 'mean',
+        'FT_PCT_home': 'mean',
+        'FG3_PCT_home': 'mean',
+        'REB_home': 'mean',
+        'AST_home': 'mean',
+        'HOME_TEAM_WINS': 'mean',
+        'POINT_DIFFERENTIAL': 'mean'
+    }).reset_index()
+    
+    home_performance.columns = [
+        'TEAM_ID', 'SEASON', 'HOME_PTS_MEAN', 'HOME_PTS_STD', 'HOME_GAMES_COUNT',
+        'HOME_FG_PCT', 'HOME_FT_PCT', 'HOME_FG3_PCT', 'HOME_REB_MEAN', 'HOME_AST_MEAN',
+        'HOME_WIN_PCT', 'HOME_PT_DIFF_MEAN'
+    ]
+    
+    # Rendimiento como visitante
+    away_performance = games_clean.groupby(['VISITOR_TEAM_ID', 'SEASON']).agg({
+        'PTS_away': ['mean', 'std', 'count'],
+        'FG_PCT_away': 'mean',
+        'FT_PCT_away': 'mean',
+        'FG3_PCT_away': 'mean',
+        'REB_away': 'mean',
+        'AST_away': 'mean',
+        'HOME_TEAM_WINS': lambda x: (1 - x.mean()),  # Win % visitante
+        'POINT_DIFFERENTIAL': lambda x: (-x.mean())  # Diferencia desde perspectiva visitante
+    }).reset_index()
+    
+    away_performance.columns = [
+        'TEAM_ID', 'SEASON', 'AWAY_PTS_MEAN', 'AWAY_PTS_STD', 'AWAY_GAMES_COUNT',
+        'AWAY_FG_PCT', 'AWAY_FT_PCT', 'AWAY_FG3_PCT', 'AWAY_REB_MEAN', 'AWAY_AST_MEAN',
+        'AWAY_WIN_PCT', 'AWAY_PT_DIFF_MEAN'
+    ]
+    
+    # Combinar rendimiento local y visitante
+    team_features = pd.merge(home_performance, away_performance, on=['TEAM_ID', 'SEASON'])
+    
+    # Calcular ventaja de local
+    team_features['HOME_ADVANTAGE_PTS'] = team_features['HOME_PTS_MEAN'] - team_features['AWAY_PTS_MEAN']
+    team_features['HOME_ADVANTAGE_WIN'] = team_features['HOME_WIN_PCT'] - team_features['AWAY_WIN_PCT']
+    team_features['HOME_ADVANTAGE_REB'] = team_features['HOME_REB_MEAN'] - team_features['AWAY_REB_MEAN']
+    
+    # Unir con información de equipos
+    team_features = pd.merge(team_features, teams[['TEAM_ID', 'NICKNAME', 'CITY']], 
+                            on='TEAM_ID', how='left')
+    
+    logger.info(f"Features base de equipos creados: {team_features.shape}")
+    return team_features
 
-    away = base.rename(columns={
-        "VISITOR_TEAM_ID": "TEAM_ID",
-        "PTS_away": "PTS_for",
-        "PTS_home": "PTS_against"
-    })[["GAME_ID","SEASON","GAME_DATE_EST","TEAM_ID","PTS_for","PTS_against","HOME_TEAM_WINS"]]
-    away["is_home"] = 0
-    long_df = pd.concat([home, away], ignore_index=True).sort_values(["TEAM_ID","GAME_DATE_EST"])
-
-    # join con detalles agregados
-    if "TEAM_ID" in details_agg.columns:
-        long_df = long_df.merge(details_agg, on=["GAME_ID","TEAM_ID"], how="left")
-
-    # rest_days
-    long_df["prev_game_date"] = long_df.groupby(["TEAM_ID","SEASON"])["GAME_DATE_EST"].shift(1)
-    long_df["rest_days"] = (long_df["GAME_DATE_EST"] - long_df["prev_game_date"]).dt.days
-    long_df["rest_days"] = long_df["rest_days"].fillna(long_df["rest_days"].median())
-
-    # win indicator (para racha)
-    long_df["won_game"] = (long_df["is_home"] & (long_df["HOME_TEAM_WINS"]==1)) | \
-                          ((1-long_df["is_home"]) & (long_df["HOME_TEAM_WINS"]==0))
-    long_df["won_game"] = long_df["won_game"].astype(int)
-
-    # rolling features por equipo/temporada
-    features = []
-    group = long_df.groupby(["TEAM_ID","SEASON"], group_keys=False)
-    for col in ["PTS_for","PTS_against","REB_team","AST_team","TOV_team","FG3M_team"]:
-        if col in long_df.columns:
-            features.append(group[col].shift(1).rolling(rolling_window, min_periods=min_games_per_season).mean().rename(f"{col}_roll{rolling_window}"))
-    # racha simple (últimos N)
-    win_rate = group["won_game"].shift(1).rolling(rolling_window, min_periods=min_games_per_season).mean().rename(f"winrate_roll{rolling_window}")
-    feat_df = pd.concat(features + [win_rate], axis=1)
-
-    long_feat = pd.concat([long_df[["GAME_ID","TEAM_ID","is_home","rest_days"]], feat_df], axis=1)
-
-    # Pivot a nivel de partido, separando home/away
-    home_feat = long_feat[long_feat["is_home"]==1].drop(columns=["is_home"]).add_suffix("_home")
-    away_feat = long_feat[long_feat["is_home"]==0].drop(columns=["is_home"]).add_suffix("_away")
-
-    merged = base.merge(home_feat, left_on=["GAME_ID","HOME_TEAM_ID"], right_on=["GAME_ID_home","TEAM_ID_home"], how="left")
-    merged = merged.merge(away_feat, left_on=["GAME_ID","VISITOR_TEAM_ID"], right_on=["GAME_ID_away","TEAM_ID_away"], how="left")
-
-    # Limpieza de columnas auxiliares
-    drop_cols = [c for c in merged.columns if c.endswith("_home") and c.startswith("TEAM_ID_")] + \
-                [c for c in merged.columns if c.endswith("_away") and c.startswith("TEAM_ID_")] + \
-                ["GAME_ID_home","GAME_ID_away"]
-    merged = merged.drop(columns=drop_cols, errors="ignore")
-
-    return merged
-
-def build_model_inputs(game_level_features: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def create_game_level_features(games_clean: pd.DataFrame, team_features_base: pd.DataFrame) -> pd.DataFrame:
     """
-    Prepara dos targets:
-    - Clasificación: HOME_TEAM_WINS (0/1)
-    - Regresión: MARGIN (float)
-    Filtra columnas para evitar fuga de información.
+    Crear features a nivel de partido para modelado.
     """
-    # columnas numéricas de features (evitar PTS del partido ya jugado)
-    leak_cols = {"PTS_home","PTS_away","TOTAL_POINTS","MARGIN","HOME_TEAM_WINS"}
-    feature_cols = [c for c in game_level_features.columns 
-                    if game_level_features[c].dtype.kind in "if" and c not in leak_cols]
+    logger.info("Creando features a nivel de partido")
+    
+    game_features = games_clean.copy()
+    
+    # Agregar features históricos del equipo local
+    home_features = team_features_base.rename(columns={
+        col: 'HOME_HIST_' + col for col in team_features_base.columns 
+        if col not in ['TEAM_ID', 'SEASON', 'NICKNAME', 'CITY']
+    })
+    
+    game_features = pd.merge(game_features, home_features, 
+                           left_on=['HOME_TEAM_ID', 'SEASON'], 
+                           right_on=['TEAM_ID', 'SEASON'], 
+                           how='left')
+    
+    # Agregar features históricos del equipo visitante
+    away_features = team_features_base.rename(columns={
+        col: 'AWAY_HIST_' + col for col in team_features_base.columns 
+        if col not in ['TEAM_ID', 'SEASON', 'NICKNAME', 'CITY']
+    })
+    
+    game_features = pd.merge(game_features, away_features, 
+                           left_on=['VISITOR_TEAM_ID', 'SEASON'], 
+                           right_on=['TEAM_ID', 'SEASON'], 
+                           how='left')
+    
+    # Crear features comparativas
+    game_features['PTS_DIFF_HIST'] = (
+        game_features['HOME_HIST_HOME_PTS_MEAN'] - game_features['AWAY_HIST_AWAY_PTS_MEAN']
+    )
+    game_features['WIN_PCT_DIFF'] = (
+        game_features['HOME_HIST_HOME_WIN_PCT'] - game_features['AWAY_HIST_AWAY_WIN_PCT']
+    )
+    
+    # Eliminar columnas duplicadas
+    cols_to_drop = ['TEAM_ID_x', 'TEAM_ID_y', 'SEASON_x', 'SEASON_y', 
+                   'NICKNAME_x', 'NICKNAME_y', 'CITY_x', 'CITY_y']
+    game_features = game_features.drop(columns=[col for col in cols_to_drop if col in game_features.columns])
+    
+    logger.info(f"Features a nivel de partido creados: {game_features.shape}")
+    return game_features
 
-    X = game_level_features[feature_cols].copy()
-    y_cls = game_level_features["HOME_TEAM_WINS"].astype(int)
-    y_reg = game_level_features["MARGIN"].astype(float)
+def prepare_model_inputs(game_level_features: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Preparar datasets para modelado de clasificación y regresión.
+    """
+    logger.info("Preparando inputs para modelado")
+    
+    # Seleccionar features para modelado
+    feature_columns = [
+        # Features del partido actual
+        'PTS_home', 'PTS_away', 'FG_PCT_home', 'FG_PCT_away',
+        'FT_PCT_home', 'FT_PCT_away', 'FG3_PCT_home', 'FG3_PCT_away',
+        'REB_home', 'REB_away', 'AST_home', 'AST_away',
+        'STL_home', 'STL_away', 'BLK_home', 'BLK_away',
+        'TO_home', 'TO_away', 'PF_home', 'PF_away',
+        
+        # Features históricos locales
+        'HOME_HIST_HOME_PTS_MEAN', 'HOME_HIST_HOME_PTS_STD',
+        'HOME_HIST_HOME_FG_PCT', 'HOME_HIST_HOME_FT_PCT',
+        'HOME_HIST_HOME_WIN_PCT', 'HOME_HIST_HOME_PT_DIFF_MEAN',
+        
+        # Features históricos visitantes
+        'AWAY_HIST_AWAY_PTS_MEAN', 'AWAY_HIST_AWAY_PTS_STD',
+        'AWAY_HIST_AWAY_FG_PCT', 'AWAY_HIST_AWAY_FT_PCT',
+        'AWAY_HIST_AWAY_WIN_PCT', 'AWAY_HIST_AWAY_PT_DIFF_MEAN',
+        
+        # Features comparativos
+        'PTS_DIFF_HIST', 'WIN_PCT_DIFF',
+        
+        # Features temporales
+        'MONTH', 'DAY_OF_WEEK'
+    ]
+    
+    # Target para clasificación: ¿Gana el equipo local?
+    classification_target = 'HOME_TEAM_WINS'
+    
+    # Target para regresión: Diferencia de puntos
+    regression_target = 'POINT_DIFFERENTIAL'
+    
+    # Filtrar columnas existentes
+    available_features = [col for col in feature_columns if col in game_level_features.columns]
+    
+    # Dataset para clasificación
+    classification_data = game_level_features[available_features + [classification_target]].copy()
+    classification_data = classification_data.dropna()
+    
+    # Dataset para regresión
+    regression_data = game_level_features[available_features + [regression_target]].copy()
+    regression_data = regression_data.dropna()
+    
+    logger.info(f"Dataset clasificación: {classification_data.shape}")
+    logger.info(f"Dataset regresión: {regression_data.shape}")
+    
+    return classification_data, regression_data
 
-    cls = pd.concat([X, y_cls.rename("TARGET_HOME_WIN")], axis=1)
-    reg = pd.concat([X, y_reg.rename("TARGET_MARGIN")], axis=1)
-    return cls, reg
+def validate_data_quality(games_clean: pd.DataFrame, 
+                         team_features_base: pd.DataFrame,
+                         game_level_features: pd.DataFrame) -> Dict[str, bool]:
+    """
+    Validar la calidad de los datos procesados.
+    """
+    logger.info("Validando calidad de datos")
+    
+    validation_results = {}
+    
+    # Validar que no hay valores missing
+    validation_results['no_missing_games'] = games_clean.isnull().sum().sum() == 0
+    validation_results['no_missing_team_features'] = team_features_base.isnull().sum().sum() == 0
+    validation_results['no_missing_game_features'] = game_level_features.isnull().sum().sum() == 0
+    
+    # Validar que los DataFrames no están vacíos
+    validation_results['games_not_empty'] = len(games_clean) > 0
+    validation_results['team_features_not_empty'] = len(team_features_base) > 0
+    validation_results['game_features_not_empty'] = len(game_level_features) > 0
+    
+    # Validar tipos de datos
+    validation_results['correct_dtypes'] = all([
+        games_clean['HOME_TEAM_WINS'].dtype == bool,
+        pd.api.types.is_datetime64_any_dtype(games_clean['GAME_DATE_EST'])
+    ])
+    
+    # Log validation results
+    for test_name, result in validation_results.items():
+        status = "PASS" if result else "FAIL"
+        logger.info(f"Validación {test_name}: {status}")
+    
+    if all(validation_results.values()):
+        logger.info("✅ Todas las validaciones pasaron correctamente")
+    else:
+        logger.warning("⚠️ Algunas validaciones fallaron")
+    
+    return validation_results
+
+def create_eda_visualizations(games_clean: pd.DataFrame) -> Dict[str, plt.Figure]:
+    """
+    Crear visualizaciones para EDA.
+    """
+    logger.info("Creando visualizaciones EDA")
+    
+    figures = {}
+    
+    # 1. Distribución de puntos
+    fig1, ax1 = plt.subplots(figsize=(12, 6))
+    sns.histplot(games_clean["PTS_home"], kde=True, label="Local", color="blue", alpha=0.7, ax=ax1)
+    sns.histplot(games_clean["PTS_away"], kde=True, label="Visitante", color="red", alpha=0.7, ax=ax1)
+    ax1.set_title("Distribución de Puntos - Local vs Visitante")
+    ax1.set_xlabel("Puntos")
+    ax1.set_ylabel("Frecuencia")
+    ax1.legend()
+    figures["points_distribution"] = fig1
+    
+    # 2. Porcentaje de victorias por temporada
+    fig2, ax2 = plt.subplots(figsize=(12, 6))
+    win_pct_by_season = games_clean.groupby('SEASON')['HOME_TEAM_WINS'].mean() * 100
+    win_pct_by_season.plot(kind='bar', ax=ax2, color='green')
+    ax2.set_title("Porcentaje de Victorias Locales por Temporada")
+    ax2.set_xlabel("Temporada")
+    ax2.set_ylabel("Porcentaje de Victorias (%)")
+    ax2.tick_params(axis='x', rotation=45)
+    figures["win_pct_by_season"] = fig2
+    
+    # 3. Correlación entre variables
+    fig3, ax3 = plt.subplots(figsize=(14, 12))
+    numeric_cols = games_clean.select_dtypes(include=[np.number]).columns
+    correlation_matrix = games_clean[numeric_cols].corr()
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0, fmt='.2f', ax=ax3)
+    ax3.set_title("Matriz de Correlación - Variables Numéricas")
+    figures["correlation_matrix"] = fig3
+    
+    logger.info(f"Visualizaciones EDA creadas: {len(figures)} figuras")
+    return figures

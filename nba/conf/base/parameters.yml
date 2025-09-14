@@ -12,3 +12,21 @@ required_game_cols:
   - PTS_home
   - PTS_away
   - HOME_TEAM_WINS
+
+data_preparation:
+  # Configuración para manejo de missing values
+  missing_values:
+    numeric_strategy: "median"
+    categorical_strategy: "most_frequent"
+  
+  # Configuración para feature engineering
+  feature_engineering:
+    min_games_for_stats: 10
+    seasons_to_include: [2015, 2016, 2017, 2018, 2019, 2020]
+    
+  # Configuración para modelado
+  modeling:
+    test_size: 0.2
+    random_state: 42
+    classification_target: "HOME_TEAM_WINS"
+    regression_target: "POINT_DIFFERENTIAL"
