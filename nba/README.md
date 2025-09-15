@@ -1,101 +1,164 @@
-# NBA
+📋 Descripción del Proyecto
+Este proyecto analiza datos de la NBA para identificar patrones de rendimiento de equipos, especialmente el desempeño como local vs. visitante. Utiliza el framework Kedro para crear pipelines reproducibles de procesamiento de datos.
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+🎯 Objetivos Principales
+Identificar qué equipos son mejores jugando en casa
 
-## Overview
+Analizar qué equipos son peores como visitantes
 
-This is your new Kedro project, which was generated using `kedro 1.0.0`.
+Estudiar patrones ofensivos y defensivos
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+Crear pipelines modulares y reproducibles
 
-## Rules and guidelines
+📊 Datasets Utilizados
+El proyecto utiliza 3 datasets principales de Kaggle NBA Games:
 
-In order to get the best out of the template:
+games.csv - Resultados y estadísticas de partidos
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a data engineering convention
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+games_details.csv - Estadísticas por jugador por partido
 
-## How to install dependencies
+teams.csv - Información de los equipos
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+🚀 Instalación y Configuración
+Prerrequisitos
+Python 3.8+
 
-To install them, run:
+pip
 
-```
+virtualenv (recomendado)
+
+1. Clonar y Configurar el Proyecto
+bash
+# Crear entorno virtual
+python -m venv venv
+
+# Activar entorno virtual (Linux/Mac)
+source venv/bin/activate
+
+# Activar entorno virtual (Windows)
+venv\Scripts\activate
+
+# Instalar dependencias
 pip install -r requirements.txt
-```
+2. Configurar los Datos
+bash
+# Crear estructura de carpetas de datos
+mkdir -p data/01_raw
 
-## How to run your Kedro pipeline
+# Descargar datasets de Kaggle y colocarlos en:
+# data/01_raw/games.csv
+# data/01_raw/games_details.csv  
+# data/01_raw/teams.csv
 
-You can run your Kedro project with:
+3. Configurar Kedro
+bash
+# Inicializar proyecto (si es necesario)
+kedro info
 
-```
+🏃‍♂️ Ejecución del Proyecto
+Ejecutar el Pipeline Completo
+bash
+# Ejecutar todo el pipeline
 kedro run
-```
+Ejecutar Pipelines Específicos
+bash
+# Solo data engineering
+kedro run --pipeline=data_engineering
 
-## How to test your Kedro project
+# Solo un nodo específico
+kedro run --node=clean_games_data_node
+Visualizar el Pipeline
+bash
+# Iniciar interfaz visual
+kedro viz
 
-Have a look at the file `tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
-
-```
-pytest
-```
-
-You can configure the coverage threshold in your project's `pyproject.toml` file under the `[tool.coverage.report]` section.
-
-
-## Project dependencies
-
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
-
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
-
-## How to work with Kedro and notebooks
-
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `context`, 'session', `catalog`, and `pipelines`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
-
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
-
-```
-pip install jupyter
-```
-
-After installing Jupyter, you can start a local notebook server:
-
-```
+# Abrir en navegador: http://127.0.0.1:4141
+Trabajar con Notebooks
+bash
+# Abrir Jupyter con contexto de Kedro
 kedro jupyter notebook
-```
 
-### JupyterLab
-To use JupyterLab, you need to install it:
+# O abrir notebook específico
+kedro jupyter notebook --notebook-path notebooks/03_data_preparation.ipynb
+📝 Notebooks Disponibles
+1. 01_business_understanding.ipynb
+Definición de objetivos del proyecto
 
-```
-pip install jupyterlab
-```
+Preguntas de negocio
 
-You can also start JupyterLab:
+Plan del proyecto
 
-```
-kedro jupyter lab
-```
+2. 02_data_understanding.ipynb
+Análisis exploratorio de datos (EDA)
 
-### IPython
-And if you want to run an IPython session:
+Validación de calidad de datos
 
-```
-kedro ipython
-```
+Visualizaciones iniciales
 
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
+3. 03_data_preparation.ipynb
+Limpieza y transformación de datos
 
-> *Note:* Your output cells will be retained locally.
+Feature engineering
 
-## Package your Kedro project
+Preparación para modelado
 
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+🔧 Comandos Útiles
+bash
+# Ver información del proyecto
+kedro info
+
+# Listar datasets disponibles
+kedro catalog list
+
+# Ejecutar tests
+kedro test
+
+# Crear nuevo pipeline
+kedro pipeline create <nombre_pipeline>
+
+# Instalar dependencias de desarrollo
+pip install -r requirements.txt
+🎯 Flujo de Trabajo Recomendado
+Exploración inicial: Ejecutar 02_data_understanding.ipynb
+
+Procesamiento: Ejecutar pipeline completo kedro run
+
+Análisis: Usar datasets procesados para análisis
+
+Iteración: Modificar pipelines según necesidades
+
+📊 Datasets Generados
+El pipeline produce estos datasets principales:
+
+games_clean - Partidos limpios
+
+games_validated - Partidos validados
+
+team_features_base - Features de equipos
+
+game_level_features - Features a nivel partido
+
+final_integrated_dataset - Dataset completo integrado
+
+⚠️ Problemas comunes
+Error: "Kedro project not found"
+bash
+# Asegurarse de estar en el directorio del proyecto
+cd nba-analysis
+
+# Verificar que existe pyproject.toml
+ls -la pyproject.toml
+Error: Missing dependencies
+bash
+# Reinstalar dependencias
+pip install -r requirements.txt
+
+# O instalar Kedro específicamente
+pip install "kedro>=0.18.0,<0.19.0"
+Error: Dataset not found
+bash
+# Verificar que los archivos están en data/01_raw/
+ls -la data/01_raw/
+
+# Verificar el catalog.yml
+cat conf/base/catalog.yml
