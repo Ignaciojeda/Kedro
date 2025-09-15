@@ -42,6 +42,13 @@ data_engineering.team_features_base:
 
   # === PRIMARY (limpios) ===
 
+data_engineering.games_teams_details:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/games_teams_details.parquet
+  save_args:
+    index: False
+
+
 # === FEATURE (engineering) ===
 data_engineering.game_level_features:
   type: pandas.ParquetDataset

@@ -18,6 +18,25 @@ data_preparation:
   missing_values:
     numeric_strategy: "median"
     categorical_strategy: "most_frequent"
+
+    # conf/base/parameters.yml
+union_tablas:
+  cols_games_to_drop:
+    - TEAM_ID_home
+    - TEAM_ID_away
+    - GAME_STATUS_TEXT
+  cols_teams_to_drop:
+    - LEAGUE_ID
+    - MAX_YEAR
+    - MIN_YEAR
+  cols_final_to_drop:
+    - ABBREVIATION
+    - CITY
+  rename_columns:
+    visitor_to_away: "AWAY_TEAM_ID"
+    away_from: "VISITOR_TEAM_ID"
+
+
   
   # Configuración para feature engineering
   feature_engineering:
