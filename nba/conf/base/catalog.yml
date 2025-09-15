@@ -29,16 +29,18 @@ data_engineering.details_agg_teamgame:
   filepath: data/02_intermediate/details_agg_teamgame.parquet
   versioned: false
 
-# === PRIMARY (limpios) ===
+
 data_engineering.games_clean:
   type: pandas.ParquetDataset
-  filepath: data/03_primary/games_clean.parquet
+  filepath: data/02_intermediate/games_clean.parquet
   versioned: false
 
 data_engineering.team_features_base:
   type: pandas.ParquetDataset
-  filepath: data/03_primary/team_features_base.parquet
+  filepath: data/02_intermediate/team_features_base.parquet
   versioned: false
+
+  # === PRIMARY (limpios) ===
 
 # === FEATURE (engineering) ===
 data_engineering.game_level_features:
