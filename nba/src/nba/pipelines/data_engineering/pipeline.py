@@ -22,7 +22,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 1: Limpieza de datos de partidos
             node(
                 func=clean_games_data,
-                inputs="games",
+                inputs="games",                # <-- nombre simple
                 outputs="games_limpios",
                 name="clean_games_data_node",
                 tags=["cleaning", "preprocessing"]
@@ -31,7 +31,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 2: Limpieza de datos de equipos
             node(
                 func=clean_teams_data,
-                inputs="teams",
+                inputs="teams",                # <-- nombre simple
                 outputs="teams_clean",
                 name="clean_teams_data_node",
                 tags=["cleaning", "preprocessing"]
@@ -91,6 +91,6 @@ def create_pipeline(**kwargs) -> Pipeline:
                 tags=["visualization", "eda"]
             )
         ],
-        tags="data_engineering",
-        namespace="data_engineering"
+        tags="data_engineering"  # <-- mantenemos la etiqueta, pero SIN namespace
+        # namespace="data_engineering"  # ❌ Eliminado
     )

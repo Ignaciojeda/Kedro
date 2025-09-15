@@ -1,75 +1,65 @@
+# conf/base/catalog.yml
+
 # === RAW (inputs) ===
-data_engineering.games:
+games:  # ← QUITAR "data_engineering."
   type: pandas.CSVDataset
   filepath: data/01_raw/games.csv
   load_args:
     parse_dates: ["GAME_DATE_EST"]
 
-data_engineering.games_details:
+games_details:  # ← QUITAR "data_engineering."
   type: pandas.CSVDataset
   filepath: data/01_raw/games_details.csv
 
-data_engineering.teams:
+teams:  # ← QUITAR "data_engineering."
   type: pandas.CSVDataset
   filepath: data/01_raw/teams.csv
 
 # === INTERMEDIATE ===
-data_engineering.games_limpios:
+games_limpios:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/games_limpios.parquet
-  versioned: false
 
-data_engineering.games_validated:
+games_validated:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/games_validated.parquet
-  versioned: false
 
-data_engineering.details_agg_teamgame:
+details_agg_teamgame:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/details_agg_teamgame.parquet
-  versioned: false
 
-
-data_engineering.games_clean:
+games_clean:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/games_clean.parquet
-  versioned: false
 
-data_engineering.team_features_base:
+team_features_base:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/team_features_base.parquet
-  versioned: false
 
-  # === PRIMARY (limpios) ===
-
-data_engineering.games_teams_details:
+# === PRIMARY (limpios) ===
+games_teams_details:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/03_primary/games_teams_details.parquet
   save_args:
-    index: False
-
+    index: false
 
 # === FEATURE (engineering) ===
-data_engineering.game_level_features:
+game_level_features:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/04_feature/game_level_features.parquet
-  versioned: false
 
 # === MODEL INPUT (targets listos) ===
-data_engineering.model_input_classification:
+model_input_classification:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/05_model_input/model_input_classification.parquet
-  versioned: false
 
-data_engineering.model_input_regression:
+model_input_regression:  # ← QUITAR "data_engineering."
   type: pandas.ParquetDataset
   filepath: data/05_model_input/model_input_regression.parquet
-  versioned: false
 
 # === REPORTING / FIGURES ===
-data_engineering.eda_figs:
-  type: matplotlib.MatplotlibWriter
+eda_figs:  # ← QUITAR "data_engineering." y corregir MatplotlibWriter
+  type: matplotlib.MatplotlibDataset  # ← CORREGIR: Writer → Dataset
   filepath: data/02_intermediate/figures
   save_args:
     format: png
-  versioned: false
