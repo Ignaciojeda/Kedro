@@ -1,107 +1,110 @@
-📋 Descripción del Proyecto
-Este proyecto analiza datos de la NBA para identificar patrones de rendimiento de equipos, especialmente el desempeño como local vs. visitante. Utiliza el framework Kedro para crear pipelines reproducibles de procesamiento de datos.
+# 🏀 Análisis de Datos NBA con Kedro
 
-🎯 Objetivos Principales
-Identificar qué equipos son mejores jugando en casa
+## 📋 Descripción del Proyecto
+Este proyecto analiza datos de la **NBA** para identificar patrones de rendimiento de equipos, especialmente su desempeño como **local** vs. **visitante**.  
+Se utiliza el framework **Kedro** para crear pipelines reproducibles y modulares de procesamiento de datos.
 
-Analizar qué equipos son peores como visitantes
+---
 
-Estudiar patrones ofensivos y defensivos
+## 🎯 Objetivos Principales
+- 📌 Identificar qué equipos son mejores jugando en casa  
+- 📌 Analizar qué equipos son peores como visitantes  
+- 📌 Estudiar patrones ofensivos y defensivos  
+- 📌 Crear pipelines modulares y reproducibles  
 
-Crear pipelines modulares y reproducibles
+---
 
-📊 Datasets Utilizados
-El proyecto utiliza 3 datasets principales de Kaggle NBA Games:
+## 📊 Datasets Utilizados
+El proyecto utiliza **3 datasets principales de Kaggle (NBA Games)**:
 
-games.csv - Resultados y estadísticas de partidos
+| Dataset | Descripción |
+|--------|-------------|
+| `games.csv` | Resultados y estadísticas de partidos |
+| `games_details.csv` | Estadísticas por jugador por partido |
+| `teams.csv` | Información de los equipos |
 
-games_details.csv - Estadísticas por jugador por partido
+**Fuente:** [Kaggle - NBA Games Dataset](https://www.kaggle.com/datasets/nathanlauga/nba-games?select=games.csv)
 
-teams.csv - Información de los equipos
+---
 
-🚀 Instalación y Configuración
-Prerrequisitos
-Python 3.8+
+## 🚀 Instalación y Configuración
 
-pip
+### 🔑 Prerrequisitos
+- Python **3.8+**
+- `pip`
+- `virtualenv` (recomendado)
 
-virtualenv (recomendado)
+### 1️⃣ Clonar y Configurar el Proyecto
 
-1. Clonar y Configurar el Proyecto
+```bash
+# Clonar repositorio
+git clone <url_del_repositorio>
+cd nba-analysis
 
 # Crear entorno virtual
 python -m venv venv
 
-# Activar entorno virtual (Linux/Mac)
+# Activar entorno virtual
+# Linux / Mac
 source venv/bin/activate
-
-# Activar entorno virtual (Windows)
+# Windows
 venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt
-2. Configurar los Datos
-
+2️⃣ Configurar los Datos
+bash
+Copiar código
 # Crear estructura de carpetas de datos
 mkdir -p data/01_raw
+📥 Descargar datasets de Kaggle y colocarlos en:
 
-# Descargar datasets de Kaggle y colocarlos en:
-# data/01_raw/games.csv
-# data/01_raw/games_details.csv  
-# data/01_raw/teams.csv
-3. Configurar Kedro
+data/01_raw/games.csv
 
-# Inicializar proyecto (si es necesario)
+data/01_raw/games_details.csv
+
+data/01_raw/teams.csv
+
+3️⃣ Configurar Kedro
+bash
+Copiar código
+# Verificar información del proyecto
 kedro info
 🏃‍♂️ Ejecución del Proyecto
 Ejecutar el Pipeline Completo
-
-# Ejecutar todo el pipeline
+bash
+Copiar código
 kedro run
 Ejecutar Pipelines Específicos
-
+bash
+Copiar código
 # Solo data engineering
 kedro run --pipeline=data_engineering
 
 # Solo un nodo específico
 kedro run --node=clean_games_data_node
 Visualizar el Pipeline
-
-# Iniciar interfaz visual
+bash
+Copiar código
 kedro viz
-
 # Abrir en navegador: http://127.0.0.1:4141
 Trabajar con Notebooks
-
+bash
+Copiar código
 # Abrir Jupyter con contexto de Kedro
 kedro jupyter notebook
 
-# O abrir notebook específico
+# Abrir notebook específico
 kedro jupyter notebook --notebook-path notebooks/03_data_preparation.ipynb
 📝 Notebooks Disponibles
-1. 01_business_understanding.ipynb
-Definición de objetivos del proyecto
-
-Preguntas de negocio
-
-Plan del proyecto
-
-2. 02_data_understanding.ipynb
-Análisis exploratorio de datos (EDA)
-
-Validación de calidad de datos
-
-Visualizaciones iniciales
-
-3. 03_data_preparation.ipynb
-Limpieza y transformación de datos
-
-Feature engineering
-
-Preparación para modelado
+Notebook	Contenido
+01_business_understanding.ipynb	Definición de objetivos, preguntas de negocio, plan del proyecto
+02_data_understanding.ipynb	EDA, validación de calidad de datos, visualizaciones iniciales
+03_data_preparation.ipynb	Limpieza, feature engineering, preparación para modelado
 
 🔧 Comandos Útiles
-
+bash
+Copiar código
 # Ver información del proyecto
 kedro info
 
@@ -119,52 +122,28 @@ pip install -r requirements.txt
 🎯 Flujo de Trabajo Recomendado
 Exploración inicial: Ejecutar 02_data_understanding.ipynb
 
-Procesamiento: Ejecutar pipeline completo kedro run
+Procesamiento: Ejecutar pipeline completo con kedro run
 
-Análisis: Usar datasets procesados para análisis
+Análisis: Usar datasets procesados para análisis estadístico
 
 Iteración: Modificar pipelines según necesidades
 
 📊 Datasets Generados
-El pipeline produce estos datasets principales:
+El pipeline produce los siguientes datasets principales:
 
-games_clean - Partidos limpios
-
-games_validated - Partidos validados
-
-team_features_base - Features de equipos
-
-game_level_features - Features a nivel partido
-
-final_integrated_dataset - Dataset completo integrado
+Dataset	Descripción
+games_clean	Partidos limpios
+games_validated	Partidos validados
+team_features_base	Features de equipos
+game_level_features	Features a nivel partido
+final_integrated_dataset	Dataset completo integrado
 
 ⚠️ Troubleshooting
-Error: "Kedro project not found"
-
-# Asegurarse de estar en el directorio del proyecto
+Error	Solución
+Kedro project not found	Asegúrate de estar en el directorio del proyecto:
 cd nba-analysis
-
-# Verificar que existe pyproject.toml
-ls -la pyproject.toml
-Error: Missing dependencies
-
-# Reinstalar dependencias
+Missing dependencies	Reinstalar dependencias:
 pip install -r requirements.txt
-
-# O instalar Kedro específicamente
+o instalar Kedro directamente:
 pip install "kedro>=0.18.0,<0.19.0"
-Error: Dataset not found
-
-# Verificar que los archivos están en data/01_raw/
-ls -la data/01_raw/
-
-# Verificar el catalog.yml
-cat conf/base/catalog.yml
-📈 Próximos Pasos
-Análisis avanzado: Usar el dataset integrado para EDA
-
-Modelado: Implementar modelos predictivos
-
-Dashboard: Crear visualizaciones interactivas
-
-Deployment: Containerizar con Docker
+Dataset not found	Verificar que los archivos estén en data/01_raw/ y que conf/base/catalog.yml esté correctamente configurado
