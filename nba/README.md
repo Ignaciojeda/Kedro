@@ -28,7 +28,7 @@ pip
 virtualenv (recomendado)
 
 1. Clonar y Configurar el Proyecto
-bash
+
 # Crear entorno virtual
 python -m venv venv
 
@@ -41,7 +41,7 @@ venv\Scripts\activate
 # Instalar dependencias
 pip install -r requirements.txt
 2. Configurar los Datos
-bash
+
 # Crear estructura de carpetas de datos
 mkdir -p data/01_raw
 
@@ -49,32 +49,30 @@ mkdir -p data/01_raw
 # data/01_raw/games.csv
 # data/01_raw/games_details.csv  
 # data/01_raw/teams.csv
-
 3. Configurar Kedro
-bash
+
 # Inicializar proyecto (si es necesario)
 kedro info
-
 🏃‍♂️ Ejecución del Proyecto
 Ejecutar el Pipeline Completo
-bash
+
 # Ejecutar todo el pipeline
 kedro run
 Ejecutar Pipelines Específicos
-bash
+
 # Solo data engineering
 kedro run --pipeline=data_engineering
 
 # Solo un nodo específico
 kedro run --node=clean_games_data_node
 Visualizar el Pipeline
-bash
+
 # Iniciar interfaz visual
 kedro viz
 
 # Abrir en navegador: http://127.0.0.1:4141
 Trabajar con Notebooks
-bash
+
 # Abrir Jupyter con contexto de Kedro
 kedro jupyter notebook
 
@@ -103,7 +101,7 @@ Feature engineering
 Preparación para modelado
 
 🔧 Comandos Útiles
-bash
+
 # Ver información del proyecto
 kedro info
 
@@ -140,25 +138,33 @@ game_level_features - Features a nivel partido
 
 final_integrated_dataset - Dataset completo integrado
 
-⚠️ Problemas comunes
+⚠️ Troubleshooting
 Error: "Kedro project not found"
-bash
+
 # Asegurarse de estar en el directorio del proyecto
 cd nba-analysis
 
 # Verificar que existe pyproject.toml
 ls -la pyproject.toml
 Error: Missing dependencies
-bash
+
 # Reinstalar dependencias
 pip install -r requirements.txt
 
 # O instalar Kedro específicamente
 pip install "kedro>=0.18.0,<0.19.0"
 Error: Dataset not found
-bash
+
 # Verificar que los archivos están en data/01_raw/
 ls -la data/01_raw/
 
 # Verificar el catalog.yml
 cat conf/base/catalog.yml
+📈 Próximos Pasos
+Análisis avanzado: Usar el dataset integrado para EDA
+
+Modelado: Implementar modelos predictivos
+
+Dashboard: Crear visualizaciones interactivas
+
+Deployment: Containerizar con Docker
