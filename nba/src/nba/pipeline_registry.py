@@ -8,7 +8,7 @@ def register_pipelines() -> dict[str, Pipeline]:
     union_tablas = ut.create_pipeline().tag("union")
 
     return {
-        "__default__": data_engineering ,
+        "__default__": data_engineering + union_tablas ,
         "data_engineering": data_engineering,
         "de": data_engineering,
         "union_tablas": union_tablas
