@@ -73,3 +73,119 @@ data_engineering.eda_figs:
   save_args:
     format: png
   versioned: false
+
+# === ALIASES PARA COMPATIBILIDAD ===
+games:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/games.csv
+  load_args:
+    parse_dates: ["GAME_DATE_EST"]
+
+games_details:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/games_details.csv
+
+teams:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/teams.csv
+
+games_clean:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/games_clean.parquet
+
+teams_clean:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/teams_clean.parquet
+
+validation_report:
+  type: json.JSONDataset
+  filepath: data/06_reporting/validation_report.json
+
+# === ALIASES PARA MODELOS ===
+model_input_classification:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/model_input_classification.parquet
+  versioned: false
+
+model_input_regression:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/model_input_regression.parquet
+  versioned: false
+
+# === CLASSIFICATION MODELS OUTPUTS ===
+classification_report:
+  type: json.JSONDataset
+  filepath: data/07_model_output/classification/classification_report.json
+  versioned: false
+
+best_classification_model:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/classification/best_classification_model.pkl
+  versioned: false
+
+classification_scaler:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/classification/classification_scaler.pkl
+  versioned: false
+
+feature_importance:
+  type: json.JSONDataset
+  filepath: data/07_model_output/classification/feature_importance.json
+  versioned: false
+
+trained_classification_models:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/classification/all_trained_models.pkl
+  versioned: false
+
+classification_evaluation_results:
+  type: json.JSONDataset
+  filepath: data/07_model_output/classification/evaluation_results.json
+  versioned: false
+
+best_model_analysis:
+  type: json.JSONDataset
+  filepath: data/07_model_output/classification/best_model_analysis.json
+  versioned: false
+
+# === REGRESSION MODELS OUTPUTS (para futuro) ===
+regression_report:
+  type: json.JSONDataset
+  filepath: data/07_model_output/regression/regression_report.json
+  versioned: false
+
+best_regression_model:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/regression/best_regression_model.pkl
+  versioned: false
+
+regression_scaler:
+  type: pickle.PickleDataset
+  filepath: data/07_model_output/regression/regression_scaler.pkl
+  versioned: false
+
+# === PIPELINE INTERMEDIATES (internos) ===
+X_train:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/classification/X_train.pkl
+  versioned: false
+
+X_test:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/classification/X_test.pkl
+  versioned: false
+
+y_train:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/classification/y_train.pkl
+  versioned: false
+
+y_test:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/classification/y_test.pkl
+  versioned: false
+
+feature_scaler:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/classification/feature_scaler.pkl
+  versioned: false

@@ -22,8 +22,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 1: Limpieza de datos de partidos
             node(
                 func=clean_games_data,
-                inputs="games",                # <-- nombre simple
-                outputs="games_limpios",
+                inputs="data_engineering.games",  # ← USAR NOMBRE CORRECTO
+                outputs="data_engineering.games_limpios",
                 name="clean_games_data_node",
                 tags=["cleaning", "preprocessing"]
             ),
@@ -31,8 +31,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 2: Limpieza de datos de equipos
             node(
                 func=clean_teams_data,
-                inputs="teams",                # <-- nombre simple
-                outputs="teams_clean",
+                inputs="data_engineering.teams",  # ← USAR NOMBRE CORRECTO
+                outputs="data_engineering.teams_clean",
                 name="clean_teams_data_node",
                 tags=["cleaning", "preprocessing"]
             ),
@@ -40,8 +40,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 3: Manejo de valores missing
             node(
                 func=handle_missing_values,
-                inputs="games_limpios",
-                outputs="games_validated",
+                inputs="data_engineering.games_limpios",
+                outputs="data_engineering.games_validated",
                 name="handle_missing_values_node",
                 tags=["cleaning", "missing_values"]
             ),
@@ -49,8 +49,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 4: Crear features base de equipos
             node(
                 func=create_team_features_base,
-                inputs=["games_validated", "teams_clean"],
-                outputs="team_features_base",
+                inputs=["data_engineering.games_validated", "data_engineering.teams_clean"],
+                outputs="data_engineering.team_features_base",
                 name="create_team_features_base_node",
                 tags=["feature_engineering", "aggregation"]
             ),
@@ -58,8 +58,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 5: Crear features a nivel de partido
             node(
                 func=create_game_level_features,
-                inputs=["games_validated", "team_features_base"],
-                outputs="game_level_features",
+                inputs=["data_engineering.games_validated", "data_engineering.team_features_base"],
+                outputs="data_engineering.game_level_features",
                 name="create_game_level_features_node",
                 tags=["feature_engineering", "model_prep"]
             ),
@@ -67,8 +67,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 6: Preparar inputs para modelado
             node(
                 func=prepare_model_inputs,
-                inputs="game_level_features",
-                outputs=["model_input_classification", "model_input_regression"],
+                inputs="data_engineering.game_level_features",
+                outputs=["data_engineering.model_input_classification", "data_engineering.model_input_regression"],
                 name="prepare_model_inputs_node",
                 tags=["model_prep", "final_output"]
             ),
@@ -76,8 +76,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 7: Validación de calidad de datos
             node(
                 func=validate_data_quality,
-                inputs=["games_validated", "team_features_base", "game_level_features"],
-                outputs="validation_report",
+                inputs=["data_engineering.games_validated", "data_engineering.team_features_base", "data_engineering.game_level_features"],
+                outputs="data_engineering.validation_report",
                 name="validate_data_quality_node",
                 tags=["validation", "quality_check"]
             ),
@@ -85,12 +85,11 @@ def create_pipeline(**kwargs) -> Pipeline:
             # Node 8: Crear visualizaciones EDA
             node(
                 func=create_eda_visualizations,
-                inputs="games_validated",
-                outputs="eda_figs",
+                inputs="data_engineering.games_validated",
+                outputs="data_engineering.eda_figs",
                 name="create_eda_visualizations_node",
                 tags=["visualization", "eda"]
             )
         ],
-        tags="data_engineering"  # <-- mantenemos la etiqueta, pero SIN namespace
-        # namespace="data_engineering"  # ❌ Eliminado
+        tags="data_engineering"
     )

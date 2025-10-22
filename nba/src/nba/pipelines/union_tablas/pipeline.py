@@ -11,6 +11,7 @@ from .nodes import (
     unir_con_info_equipos
 )
 
+# En union_tablas/pipeline.py
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
         [
@@ -18,45 +19,47 @@ def create_pipeline(**kwargs) -> Pipeline:
                 func=eliminar_columnas,
                 inputs=dict(df="data_engineering.games_validated",
                             cols="params:union_tablas.cols_games_to_drop"),
-                outputs="data_engineering.games_limpios",
+                outputs="union_tablas.games_preprocessed",  # ← NOMBRE ÚNICO
                 name="eliminar_columnas_games_node",
             ),
             node(
                 func=renombrar_columna,
                 inputs=dict(
-                    df="data_engineering.games_limpios",
-                    viejo="params:union_tablas.rename_columns.away_from",  # esto es un string normal
+                    df="union_tablas.games_preprocessed",  # ← ACTUALIZADO
+                    viejo="params:union_tablas.rename_columns.away_from",
                     nuevo="params:union_tablas.rename_columns.visitor_to_away"
                     ),
-                outputs="data_engineering.games_preparado",
+                outputs="union_tablas.games_renamed",  # ← NOMBRE ÚNICO
                 name="renombrar_games_node",
             ),
             node(
                 func=unir_partidos_y_jugadores,
-                inputs=dict(details="data_engineering.games_details", games="data_engineering.games_preparado"),
-                outputs="data_engineering.df_final",
+                inputs=dict(details="data_engineering.games_details", 
+                           games="union_tablas.games_renamed"),  # ← ACTUALIZADO
+                outputs="union_tablas.games_details_merged",  # ← NOMBRE ÚNICO
                 name="unir_detalles_node",
             ),
             node(
                 func=eliminar_columnas,
-                inputs=dict(df="data_engineering.teams", cols="params:union_tablas.cols_teams_to_drop"),
-                outputs="data_engineering.teams_limpio",
+                inputs=dict(df="data_engineering.teams", 
+                           cols="params:union_tablas.cols_teams_to_drop"),
+                outputs="union_tablas.teams_cleaned",  # ← NOMBRE ÚNICO
                 name="eliminar_columnas_teams_node",
             ),
             node(
                 func=unir_con_info_equipos,
-                inputs=dict(df_final="data_engineering.df_final", teams_info="data_engineering.teams_limpio"),
-                outputs="data_engineering.df_final_con_equipos",
+                inputs=dict(df_final="union_tablas.games_details_merged",  # ← ACTUALIZADO
+                           teams_info="union_tablas.teams_cleaned"),  # ← ACTUALIZADO
+                outputs="union_tablas.final_with_teams",  # ← NOMBRE ÚNICO
                 name="unir_equipos_node",
             ),
             node(
                 func=eliminar_columnas,
-                inputs=dict(df="data_engineering.df_final_con_equipos",
+                inputs=dict(df="union_tablas.final_with_teams",  # ← ACTUALIZADO
                             cols="params:union_tablas.cols_final_to_drop"),
-                outputs="data_engineering.games_teams_details",
+                outputs="data_engineering.games_teams_details",  # ← Este puede mantenerse igual
                 name="eliminar_columnas_final_node",
             )
         ],
-        tags="data_engineering"
+        tags="union_tablas"  # ← Cambia el tag también
     )
-
