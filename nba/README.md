@@ -24,6 +24,9 @@ El proyecto utiliza **3 datasets principales de Kaggle (NBA Games)**:
 | `teams.csv` | Información de los equipos |
 
 **Fuente:** [Kaggle - NBA Games Dataset](https://www.kaggle.com/datasets/nathanlauga/nba-games?select=games.csv)
+---
+## LINK DE VIDEO EXPLICATIVO
+(https://drive.google.com/file/d/1ebAHpwQ2VN2p14Gi_lMuFDs5-y51tG0E/view?usp=sharing)
 
 ---
 
