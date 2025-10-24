@@ -189,3 +189,8 @@ feature_scaler:
   type: pickle.PickleDataset
   filepath: data/02_intermediate/classification/feature_scaler.pkl
   versioned: false
+
+classification_models_results:
+  type: json.JSONDataset
+  filepath: data/07_model_output/classification/classification_models_results.json
+  versioned: false
