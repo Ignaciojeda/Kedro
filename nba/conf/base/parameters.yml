@@ -1,8 +1,11 @@
+# conf/base/parameters.yml
+
+# Configuraciones generales
 rolling_window: 5
 min_games_per_season: 5
 outlier_zscore: 4.0
 
-# columnas críticas que deben existir en games
+# Columnas críticas que deben existir en games
 required_game_cols:
   - GAME_ID
   - SEASON
@@ -19,25 +22,22 @@ data_preparation:
     numeric_strategy: "median"
     categorical_strategy: "most_frequent"
 
-    # conf/base/parameters.yml
-union_tablas:
-  cols_games_to_drop:
-    - TEAM_ID_home
-    - TEAM_ID_away
-    - GAME_STATUS_TEXT
-  cols_teams_to_drop:
-    - LEAGUE_ID
-    - MAX_YEAR
-    - MIN_YEAR
-  cols_final_to_drop:
-    - ABBREVIATION
-    - CITY
-  rename_columns:
-    visitor_to_away: "AWAY_TEAM_ID"
-    away_from: "VISITOR_TEAM_ID"
+  union_tablas:
+    cols_games_to_drop:
+      - TEAM_ID_home
+      - TEAM_ID_away
+      - GAME_STATUS_TEXT
+    cols_teams_to_drop:
+      - LEAGUE_ID
+      - MAX_YEAR
+      - MIN_YEAR
+    cols_final_to_drop:
+      - ABBREVIATION
+      - CITY
+    rename_columns:
+      visitor_to_away: "AWAY_TEAM_ID"
+      away_from: "VISITOR_TEAM_ID"
 
-
-  
   # Configuración para feature engineering
   feature_engineering:
     min_games_for_stats: 10
@@ -49,3 +49,69 @@ union_tablas:
     random_state: 42
     classification_target: "HOME_TEAM_WINS"
     regression_target: "POINT_DIFFERENTIAL"
+
+# 🎯 SECCIÓN REGRESSION CORREGIDA - DEBE ESTAR EN NIVEL RAÍZ
+regression:
+  random_state: 42
+  cv_folds: 5
+  test_size: 0.2
+  sample_size: 10000
+  
+  features:
+    - FG_PCT_home
+    - FT_PCT_home
+    - FG3_PCT_home
+    - AST_home
+    - REB_home
+    - FG_PCT_away
+    - FT_PCT_away
+    - FG3_PCT_away
+    - AST_away
+    - REB_away
+    - YEAR
+    - MONTH
+    - ARENACAPACITY
+    - YEARFOUNDED
+    - HOME_TEAM_WINS
+
+  targets:
+    local_strength: PTS_home
+    away_weakness: PTS_away
+    point_differential: POINT_DIFFERENTIAL
+
+  team_identifiers:
+    - TEAM_ABBREVIATION
+    - TEAM_ID
+    - TEAM_CITY
+
+  gridsearch_params:
+    random_forest:
+      model__n_estimators: [100, 200, 300]
+      model__max_depth: [10, 20, null]
+      model__min_samples_split: [2, 5, 10]
+      model__min_samples_leaf: [1, 2, 4]
+    
+    gradient_boosting:
+      model__n_estimators: [100, 200]
+      model__learning_rate: [0.01, 0.1, 0.2]
+      model__max_depth: [3, 5, 7]
+      model__subsample: [0.8, 1.0]
+    
+    svr:
+      model__C: [0.1, 1, 10, 100]
+      model__kernel: ["rbf", "linear"]
+      model__gamma: ["scale", "auto"]
+    
+    ridge:
+      model__alpha: [0.1, 1.0, 10.0, 100.0]
+    
+    lasso:
+      model__alpha: [0.001, 0.01, 0.1, 1.0]
+    
+    elastic_net:
+      model__alpha: [0.001, 0.01, 0.1, 1.0]
+      model__l1_ratio: [0.2, 0.5, 0.8]
+    
+    knn:
+      model__n_neighbors: [3, 5, 7, 9]
+      model__weights: ["uniform", "distance"]
