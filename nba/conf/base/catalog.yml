@@ -1,4 +1,5 @@
 # conf/base/catalog.yml
+# ACTUALIZADO para Kedro 1.0.0
 
 # === RAW (inputs) ===
 data_engineering.games:
@@ -241,16 +242,26 @@ model_report:
 
 # === UNION TABLAS DATASETS ===
 union_tablas.games_preprocessed:
-  type: kedro.io.MemoryDataset
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/union_tablas/games_preprocessed.parquet
+  versioned: false
 
 union_tablas.games_renamed: 
-  type: kedro.io.MemoryDataset
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/union_tablas/games_renamed.parquet
+  versioned: false
 
 union_tablas.teams_cleaned:
-  type: kedro.io.MemoryDataset
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/union_tablas/teams_cleaned.parquet
+  versioned: false
 
 union_tablas.games_details_merged:
-  type: kedro.io.MemoryDataset
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/union_tablas/games_details_merged.parquet
+  versioned: false
 
 union_tablas.final_with_teams:
-  type: kedro.io.MemoryDataset
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/union_tablas/final_with_teams.parquet
+  versioned: false

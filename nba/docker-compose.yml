@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  nba-ml:
+    build: .
+    container_name: nba-ml-pipeline
+    working_dir: /app
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - KEDRO_ENV=docker
+    command: kedro run
