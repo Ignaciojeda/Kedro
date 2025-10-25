@@ -148,7 +148,7 @@ best_model_analysis:
   filepath: data/07_model_output/classification/best_model_analysis.json
   versioned: false
 
-# === REGRESSION MODELS OUTPUTS (para futuro) ===
+# === REGRESSION MODELS OUTPUTS ===
 regression_report:
   type: json.JSONDataset
   filepath: data/07_model_output/regression/regression_report.json
@@ -195,8 +195,7 @@ classification_models_results:
   filepath: data/07_model_output/classification/classification_models_results.json
   versioned: false
 
-
-# Datasets intermedios
+# === REGRESSION PIPELINE DATASETS ===
 regression_data:
   type: pandas.ParquetDataset
   filepath: data/04_feature/regression_data.parquet
@@ -239,3 +238,19 @@ model_report:
   type: json.JSONDataset
   filepath: data/08_reporting/model_report.json
   versioned: true
+
+# === UNION TABLAS DATASETS ===
+union_tablas.games_preprocessed:
+  type: kedro.io.MemoryDataset
+
+union_tablas.games_renamed: 
+  type: kedro.io.MemoryDataset
+
+union_tablas.teams_cleaned:
+  type: kedro.io.MemoryDataset
+
+union_tablas.games_details_merged:
+  type: kedro.io.MemoryDataset
+
+union_tablas.final_with_teams:
+  type: kedro.io.MemoryDataset

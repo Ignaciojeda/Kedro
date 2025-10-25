@@ -16,27 +16,30 @@ required_game_cols:
   - PTS_away
   - HOME_TEAM_WINS
 
+# 🎯 MOVER union_tablas A NIVEL RAÍZ
+union_tablas:
+  cols_games_to_drop:
+    - TEAM_ID_home
+    - TEAM_ID_away
+    - GAME_STATUS_TEXT
+  cols_teams_to_drop:
+    - LEAGUE_ID
+    - MAX_YEAR
+    - MIN_YEAR
+  cols_final_to_drop:
+    - ABBREVIATION
+    - CITY
+  rename_columns:
+    visitor_to_away: "AWAY_TEAM_ID"
+    away_from: "VISITOR_TEAM_ID"
+
 data_preparation:
   # Configuración para manejo de missing values
   missing_values:
     numeric_strategy: "median"
     categorical_strategy: "most_frequent"
 
-  union_tablas:
-    cols_games_to_drop:
-      - TEAM_ID_home
-      - TEAM_ID_away
-      - GAME_STATUS_TEXT
-    cols_teams_to_drop:
-      - LEAGUE_ID
-      - MAX_YEAR
-      - MIN_YEAR
-    cols_final_to_drop:
-      - ABBREVIATION
-      - CITY
-    rename_columns:
-      visitor_to_away: "AWAY_TEAM_ID"
-      away_from: "VISITOR_TEAM_ID"
+  # ELIMINAR la sección union_tablas de aquí ←
 
   # Configuración para feature engineering
   feature_engineering:
@@ -50,7 +53,7 @@ data_preparation:
     classification_target: "HOME_TEAM_WINS"
     regression_target: "POINT_DIFFERENTIAL"
 
-# 🎯 SECCIÓN REGRESSION CORREGIDA - DEBE ESTAR EN NIVEL RAÍZ
+# 🎯 SECCIÓN REGRESSION (ya está correcta en nivel raíz)
 regression:
   random_state: 42
   cv_folds: 5
