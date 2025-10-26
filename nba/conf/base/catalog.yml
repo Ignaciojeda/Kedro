@@ -1,50 +1,50 @@
 # conf/base/catalog.yml
-# ACTUALIZADO para Kedro 1.0.0
+# ACTUALIZADO para Kedro 1.0.0 con sintaxis correcta
 
 # === RAW (inputs) ===
 data_engineering.games:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/games.csv
   load_args:
     parse_dates: ["GAME_DATE_EST"]
 
 data_engineering.games_details:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/games_details.csv
 
 data_engineering.teams:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/teams.csv
 
 # === INTERMEDIATE ===
 data_engineering.games_limpios:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/games_limpios.parquet
   versioned: false
 
 data_engineering.games_validated:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/games_validated.parquet
   versioned: false
 
 data_engineering.details_agg_teamgame:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/details_agg_teamgame.parquet
   versioned: false
 
 data_engineering.games_clean:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/games_clean.parquet
   versioned: false
 
 data_engineering.team_features_base:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/team_features_base.parquet
   versioned: false
 
 # === PRIMARY (limpios) ===
 games_teams_details:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/03_primary/games_teams_details.parquet
   save_args:
     index: false
@@ -52,24 +52,24 @@ games_teams_details:
 
 # === FEATURE (engineering) ===
 data_engineering.game_level_features:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/04_feature/game_level_features.parquet
   versioned: false
 
 # === MODEL INPUT (targets listos) ===
 data_engineering.model_input_classification:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/05_model_input/model_input_classification.parquet
   versioned: false
 
 data_engineering.model_input_regression:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/05_model_input/model_input_regression.parquet
   versioned: false
 
 # === REPORTING / FIGURES ===
 data_engineering.eda_figs:
-  type: matplotlib.MatplotlibDataset
+  type: kedro_datasets.matplotlib.MatplotlibWriter
   filepath: data/02_intermediate/figures
   save_args:
     format: png
@@ -77,191 +77,191 @@ data_engineering.eda_figs:
 
 # === ALIASES PARA COMPATIBILIDAD ===
 games:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/games.csv
   load_args:
     parse_dates: ["GAME_DATE_EST"]
 
 games_details:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/games_details.csv
 
 teams:
-  type: pandas.CSVDataset
+  type: kedro_datasets.pandas.CSVDataSet
   filepath: data/01_raw/teams.csv
 
 games_clean:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/games_clean.parquet
 
 teams_clean:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/teams_clean.parquet
 
 validation_report:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/06_reporting/validation_report.json
 
 # === ALIASES PARA MODELOS ===
 model_input_classification:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/05_model_input/model_input_classification.parquet
   versioned: false
 
 model_input_regression:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/05_model_input/model_input_regression.parquet
   versioned: false
 
 # === CLASSIFICATION MODELS OUTPUTS ===
 classification_report:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/classification/classification_report.json
   versioned: false
 
 best_classification_model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/07_model_output/classification/best_classification_model.pkl
   versioned: false
 
 classification_scaler:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/07_model_output/classification/classification_scaler.pkl
   versioned: false
 
 feature_importance:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/classification/feature_importance.json
   versioned: false
 
 trained_classification_models:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/07_model_output/classification/all_trained_models.pkl
   versioned: false
 
 classification_evaluation_results:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/classification/evaluation_results.json
   versioned: false
 
 best_model_analysis:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/classification/best_model_analysis.json
   versioned: false
 
 # === REGRESSION MODELS OUTPUTS ===
 regression_report:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/regression/regression_report.json
   versioned: false
 
 best_regression_model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/07_model_output/regression/best_regression_model.pkl
   versioned: false
 
 regression_scaler:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/07_model_output/regression/regression_scaler.pkl
   versioned: false
 
 # === PIPELINE INTERMEDIATES (internos) ===
 X_train:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/02_intermediate/classification/X_train.pkl
   versioned: false
 
 X_test:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/02_intermediate/classification/X_test.pkl
   versioned: false
 
 y_train:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/02_intermediate/classification/y_train.pkl
   versioned: false
 
 y_test:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/02_intermediate/classification/y_test.pkl
   versioned: false
 
 feature_scaler:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/02_intermediate/classification/feature_scaler.pkl
   versioned: false
 
 classification_models_results:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/07_model_output/classification/classification_models_results.json
   versioned: false
 
 # === REGRESSION PIPELINE DATASETS ===
 regression_data:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/04_feature/regression_data.parquet
   save_args:
     index: false
 
 # Modelos entrenados (06_models)
 local_strength_model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/06_models/local_strength_model.pkl
   versioned: true
 
 away_weakness_model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/06_models/away_weakness_model.pkl
   versioned: true
 
 point_differential_model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/06_models/point_differential_model.pkl
   versioned: true
 
 # Resultados (08_reporting)
 local_strength_results:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/08_reporting/local_strength_results.pkl
   versioned: true
 
 away_weakness_results:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/08_reporting/away_weakness_results.pkl
   versioned: true
 
 point_differential_results:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataSet
   filepath: data/08_reporting/point_differential_results.pkl
   versioned: true
 
 model_report:
-  type: json.JSONDataset
+  type: json.JSONDataSet
   filepath: data/08_reporting/model_report.json
   versioned: true
 
 # === UNION TABLAS DATASETS ===
 union_tablas.games_preprocessed:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/union_tablas/games_preprocessed.parquet
   versioned: false
 
 union_tablas.games_renamed: 
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/union_tablas/games_renamed.parquet
   versioned: false
 
 union_tablas.teams_cleaned:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/union_tablas/teams_cleaned.parquet
   versioned: false
 
 union_tablas.games_details_merged:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/union_tablas/games_details_merged.parquet
   versioned: false
 
 union_tablas.final_with_teams:
-  type: pandas.ParquetDataset
+  type: kedro_datasets.pandas.ParquetDataSet
   filepath: data/02_intermediate/union_tablas/final_with_teams.parquet
   versioned: false
